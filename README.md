@@ -1,12 +1,16 @@
 #  MOD 04/05/2022
-Mostrar las categorías hermanas en la página de categoría [Prestashop 1.7]
+- Mostrar las categorías hermanas en la página de categoría [Prestashop 1.7]
+- Link de video [https://www.youtube.com/watch?v=xbdNglSZChs](https://www.youtube.com/watch?v=xbdNglSZChs)
+
 [![Alt text](https://img.youtube.com/vi/xbdNglSZChs/0.jpg)](https://www.youtube.com/watch?v=xbdNglSZChs)
-Siga los siguientes pasos de acontinuación.
+
+Siga los siguientes pasos de acontinuación:
 
 ## Proceso
-### 1 Paso
+### 1: Paso
 - Ingresar a tu proyecto y buscar el archivo **Category.php** en la ruta
   **/classes/** y agregar el siguiente código despues de la funcion **getSubCategories()**
+  
 ```
         public function getParentCategories($idLang, $active = true)
     {
@@ -38,9 +42,10 @@ Siga los siguientes pasos de acontinuación.
         return $result;
     }
    ``` 
-### 2 Paso
+### 2: Paso
 - Ingresar a tu proyecto y buscar el archivo **CategoryController.php** en la ruta
   **/controllers/front/listing/** y agregar el siguiente código despues de la funcion **getTemplateVarSubCategories()**
+  
   ```
       protected function getTemplateVarParentCategories()
     {
@@ -70,9 +75,9 @@ Siga los siguientes pasos de acontinuación.
             'parentcategories' => $this->getTemplateVarParentCategories(),
         ]);
     ```
-### 3 Paso
-- Ahora agregar en el tpl de tu plantilla
-- buscar la ruta **/themes/[tu-theme]/templates/catalog/listing/product-list.tpl** y agregar el siguiente código en la seccion que deas que aparesca 
+### 3: Paso
+- Ahora agregar en el tpl de tu plantilla y buscar la ruta **/themes/[tu-theme]/templates/catalog/listing/product-list.tpl** y agregar el siguiente código en la seccion que deas que aparesca 
+
   ```
     {block name='product_list_parentcategory'}
 
@@ -93,8 +98,7 @@ Siga los siguientes pasos de acontinuación.
       </div>
     {/block}
     ```
-## Vista previa
-
+    
 ## Contribución
 1. Luis Huaymana
-2. [Prestademia](https://www.youtube.com/c/prestademia)
+2. [Prestademia](https://www.youtube.com/c/prestademia) : [https://www.youtube.com/c/prestademia](https://www.youtube.com/c/prestademia)
