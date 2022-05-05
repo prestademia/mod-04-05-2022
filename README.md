@@ -1,11 +1,13 @@
 #  MOD 04/05/2022
 Mostrar las categorías hermanas en la página de categoría [Prestashop 1.7]
+[![Alt text](https://img.youtube.com/vi/xbdNglSZChs/0.jpg)](https://www.youtube.com/watch?v=xbdNglSZChs)
+Siga los siguientes pasos de acontinuación.
 
 ## Proceso
 ### 1 Paso
 - Ingresar a tu proyecto y buscar el archivo **Category.php** en la ruta
   **/classes/** y agregar el siguiente código despues de la funcion **getSubCategories()**
-
+```
         public function getParentCategories($idLang, $active = true)
     {
         $sqlGroupsWhere = '';
@@ -35,11 +37,11 @@ Mostrar las categorías hermanas en la página de categoría [Prestashop 1.7]
 
         return $result;
     }
-    
+   ``` 
 ### 2 Paso
 - Ingresar a tu proyecto y buscar el archivo **CategoryController.php** en la ruta
   **/controllers/front/listing/** y agregar el siguiente código despues de la funcion **getTemplateVarSubCategories()**
-  
+  ```
       protected function getTemplateVarParentCategories()
     {
         return array_map(function (array $category) {
@@ -61,17 +63,17 @@ Mostrar las categorías hermanas en la página de categoría [Prestashop 1.7]
             return $category;
         }, $this->category->getParentCategories($this->context->language->id));
     }
-  
+  ```
  - En el mismo archivo en la funcion **init()** agregar el siguiente codigo
-    
+    ```
     $this->context->smarty->assign([
             'parentcategories' => $this->getTemplateVarParentCategories(),
         ]);
-
+    ```
 ### 3 Paso
 - Ahora agregar en el tpl de tu plantilla
 - buscar la ruta **/themes/[tu-theme]/templates/catalog/listing/product-list.tpl** y agregar el siguiente código en la seccion que deas que aparesca 
-  
+  ```
     {block name='product_list_parentcategory'}
 
       <div id="parentcategories">
@@ -90,6 +92,7 @@ Mostrar las categorías hermanas en la página de categoría [Prestashop 1.7]
         </ul>
       </div>
     {/block}
+    ```
 ## Vista previa
 
 ## Contribución
