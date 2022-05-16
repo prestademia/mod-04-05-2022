@@ -21,47 +21,47 @@ Siga los siguientes pasos de acontinuación:
   
   ```
     $(function(){
-    multiplyProductLoad();
-    multiplyCart();
+       multiplyProductLoad();
+       multiplyCart();
 
-    prestashop.on('updatedProduct', function(){
-        multiplyProduct();
-    });
+       prestashop.on('updatedProduct', function(){
+           multiplyProduct();
+       });
 
-    prestashop.on('updateCart', function(){
-        multiplyCart();
-        let min_update = $('#quantity_wanted');
-        let attr_update = min_update.attr('min');
-        min_update.val(attr_update);
-    });
+        prestashop.on('updateCart', function(){
+            multiplyCart();
+            let min_update = $('#quantity_wanted');
+            let attr_update = min_update.attr('min');
+            min_update.val(attr_update);
+        });
 
-});
+     });
 
-function multiplyProduct(){
-    let min_step_now = $("input.quantity_wanted").attr('min');
-    let min_step_old = $("input#check_step_min").val();
+     function multiplyProduct(){
+         let min_step_now = $("input.quantity_wanted").attr('min');
+         let min_step_old = $("input#check_step_min").val();
 
-    if(min_step_now != min_step_old){
-        $("input.quantity_wanted").val(min_step_now);
-        $("input.quantity_wanted").trigger("touchspin.updatesettings", {step: min_step_now});
-        $("input#check_step_min").val(min_step_now);
-    }
-}
+         if(min_step_now != min_step_old){
+             $("input.quantity_wanted").val(min_step_now);
+             $("input.quantity_wanted").trigger("touchspin.updatesettings", {step: min_step_now});
+             $("input#check_step_min").val(min_step_now);
+         }
+     }
 
-function multiplyProductLoad(){
-    let min_step = $("input.quantity_wanted").attr('min');
-    $("input#check_step_min").val(min_step);
-    $("input.quantity_wanted").trigger("touchspin.updatesettings", {step: min_step});
+     function multiplyProductLoad(){
+         let min_step = $("input.quantity_wanted").attr('min');
+         $("input#check_step_min").val(min_step);
+         $("input.quantity_wanted").trigger("touchspin.updatesettings", {step: min_step});
 
-}
+     }
 
-function multiplyCart(){
-    let inputs = $('input[name="product-quantity-spin"]');
-    inputs.each(function(){
-        let min_step_cart = $(this).attr('min');
-        $(this).trigger("touchspin.updatesettings", {step: min_step_cart});
-    });
-}
+     function multiplyCart(){
+         let inputs = $('input[name="product-quantity-spin"]');
+         inputs.each(function(){
+             let min_step_cart = $(this).attr('min');
+             $(this).trigger("touchspin.updatesettings", {step: min_step_cart});
+         });
+     }
   ```
 -- Con todo lo anterior (paso 1 y paso 2) completamos la configuración para la ficha de producto y dejamos listo el js para el carrito de compras
 
