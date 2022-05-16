@@ -1,117 +1,97 @@
-#  MOD 15/05/2022
-- Multiplos en pagina de productos y carrito de compras [Prestashop 1.7]
-- Link de video [https://www.youtube.com/watch?v=SspCzjBAvTw](https://www.youtube.com/watch?v=SspCzjBAvTw)
+#  MOD 04/05/2022
+- Mostrar las categorías hermanas en la página de categoría [Prestashop 1.7]
+- Link de video [https://www.youtube.com/watch?v=xbdNglSZChs](https://www.youtube.com/watch?v=xbdNglSZChs)
 
-[![Alt text](https://img.youtube.com/vi/SspCzjBAvTw/0.jpg)](https://www.youtube.com/watch?v=SspCzjBAvTw)
+[![Alt text](https://img.youtube.com/vi/xbdNglSZChs/0.jpg)](https://www.youtube.com/watch?v=xbdNglSZChs)
 
 Siga los siguientes pasos de acontinuación:
 
 ## Proceso
 ### 1: Paso
-- Ingresar a tu proyecto y buscar el archivo **product-add-to-cart.tpl** en la ruta
-  **/themes/classic/template/catalog/_partials/** y agregar el siguiente código(artificio) despues del input con id= **"quantity_wanted"**
+- Ingresar a tu proyecto y buscar el archivo **Category.php** en la ruta
+  **/classes/** y agregar el siguiente código despues de la funcion **getSubCategories()**
   
 ```
-  <input type="hidden" id="check_step_min">
+        public function getParentCategories($idLang, $active = true)
+    {
+        $sqlGroupsWhere = '';
+        $sqlGroupsJoin = '';
+        if (Group::isFeatureActive()) {
+            $sqlGroupsJoin = 'LEFT JOIN `' . _DB_PREFIX_ . 'category_group` cg ON (cg.`id_category` = c.`id_category`)';
+            $groups = FrontController::getCurrentCustomerGroups();
+            $sqlGroupsWhere = 'AND cg.`id_group` ' . (count($groups) ? 'IN (' . implode(',', $groups) . ')' : '=' . (int) Configuration::get('PS_UNIDENTIFIED_GROUP'));
+        }
+        $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
+		SELECT c.*, cl.`id_lang`, cl.`name`, cl.`description`, cl.`link_rewrite`, cl.`meta_title`, cl.`meta_keywords`, cl.`meta_description`
+		FROM `' . _DB_PREFIX_ . 'category` c
+		' . Shop::addSqlAssociation('category', 'c') . '
+		LEFT JOIN `' . _DB_PREFIX_ . 'category_lang` cl ON (c.`id_category` = cl.`id_category` AND `id_lang` = ' . (int) $idLang . ' ' . Shop::addSqlRestrictionOnLang('cl') . ')
+		' . $sqlGroupsJoin . '
+		WHERE `id_parent` = ' . (int) $this->id_parent . ' AND c.`id_category` <> '.(int) $this->id.'
+		' . ($active ? 'AND `active` = 1' : '') . '
+		' . $sqlGroupsWhere . '
+		GROUP BY c.`id_category`
+		ORDER BY `level_depth` ASC, category_shop.`position` ASC');
+        foreach ($result as &$row) {
+            $row['id_image'] = Tools::file_exists_cache($this->image_dir . $row['id_category'] . '.jpg') ? (int) $row['id_category'] : Language::getIsoById($idLang) . '-default';
+            $row['legend'] = 'no picture';
+        }
+        return $result;
+    }
    ``` 
-- Y en el mismo input agrega la class **quantity_wanted**.
 ### 2: Paso
-- Ingresar a tu proyecto y buscar el archivo **custom.js** en la ruta
-  **/themes/classic/assets/js/** y agregar el siguiente código
+- Ingresar a tu proyecto y buscar el archivo **CategoryController.php** en la ruta
+  **/controllers/front/listing/** y agregar el siguiente código despues de la funcion **getTemplateVarSubCategories()**
   
   ```
-    $(function(){
-       multiplyProductLoad();
-       multiplyCart();
-
-       prestashop.on('updatedProduct', function(){
-           multiplyProduct();
-       });
-
-        prestashop.on('updateCart', function(){
-            multiplyCart();
-            let min_update = $('#quantity_wanted');
-            let attr_update = min_update.attr('min');
-            min_update.val(attr_update);
-        });
-
-     });
-
-     function multiplyProduct(){
-         let min_step_now = $("input.quantity_wanted").attr('min');
-         let min_step_old = $("input#check_step_min").val();
-
-         if(min_step_now != min_step_old){
-             $("input.quantity_wanted").val(min_step_now);
-             $("input.quantity_wanted").trigger("touchspin.updatesettings", {step: min_step_now});
-             $("input#check_step_min").val(min_step_now);
-         }
-     }
-
-     function multiplyProductLoad(){
-         let min_step = $("input.quantity_wanted").attr('min');
-         $("input#check_step_min").val(min_step);
-         $("input.quantity_wanted").trigger("touchspin.updatesettings", {step: min_step});
-
-     }
-
-     function multiplyCart(){
-         let inputs = $('input[name="product-quantity-spin"]');
-         inputs.each(function(){
-             let min_step_cart = $(this).attr('min');
-             $(this).trigger("touchspin.updatesettings", {step: min_step_cart});
-         });
-     }
+      protected function getTemplateVarParentCategories()
+    {
+        return array_map(function (array $category) {
+            $object = new Category(
+                $category['id_category'],
+                $this->context->language->id
+            );
+            $category['image'] = $this->getImage(
+                $object,
+                $object->id_image
+            );
+            $category['url'] = $this->context->link->getCategoryLink(
+                $category['id_category'],
+                $category['link_rewrite']
+            );
+            return $category;
+        }, $this->category->getParentCategories($this->context->language->id));
+    }
   ```
-- Con todo lo anterior (paso 1 y paso 2) completamos la configuración para la ficha de producto y dejamos listo el js para el carrito de compras
-
+ - En el mismo archivo en la funcion **init()** agregar el siguiente codigo
+    ```
+    $this->context->smarty->assign([
+            'parentcategories' => $this->getTemplateVarParentCategories(),
+        ]);
+    ```
 ### 3: Paso
-- Ingresar a tu proyecto y buscar el archivo **Cart.php** en la ruta
-  **/classes/** y busca la funcion llamada **function updateQty()** y copia todo esa funcion completa.
-
-- Luego crea un override; si ya lo tienes creado agrega la funcion copiada dentro de la clase principal, como se muestra en el video y edita:
-
-- Busca dentro de funcion la parte :
-
- ```
-        if (!empty($id_product_attribute)) {
-            $minimal_quantity = (int) Attribute::getAttributeMinimalQty($id_product_attribute);
-        } else {
-            $minimal_quantity = (int) $product->minimal_quantity;
-        }
- ```
-
-- Después de esta linea agrega lo siguiente:
+- Ahora agregar en el tpl de tu plantilla y buscar la ruta **/themes/[tu-theme]/templates/catalog/listing/product-list.tpl** y agregar el siguiente código en la seccion que deas que aparesca 
 
   ```
-     $verify_multiply = $this->getProductQuantity(
-            $id_product,
-            $id_product_attribute,
-            (int) $id_customization,
-            (int) $id_address_delivery
-        );
-
-        $min        = $minimal_quantity == 0 ? 1 : $minimal_quantity;
-        $multiply   = $verify_multiply['quantity'] % $min;
-
-        if($multiply != 0 ){
-            $quantity = $min - $multiply;
-        }
-        else{
-            $quantity = $min;
-        }
-  ```
-  
-### 4: Paso
-- Ahora en este paso final agrega un attributo a un input en el archivo **cart-detailed-product-line.tpl** en la ruta
-  **/themes/classic/template/checkout/_partials/**, busca la class= **"js-cart-line-product-quantity"** y agrega lo siguiente:
-  
-  ```
-     min="{$product.minimal_quantity}"
-  ```
-  
-- Y con eso terminariamos el carrito.
-
+    {block name='product_list_parentcategory'}
+      <div id="parentcategories">
+        <p class="parentcategory-heading">{l s='Parentcategories' d='Shop.Theme.Catalog'}</p>
+        <ul class="clearfix" style="display: flex; gap: 10px;">
+        {foreach from=$parentcategories item=parentcategory}
+          <li>
+            <a href="{$parentcategory.url|escape:'html':'UTF-8'}" title="{$parentcategory.name|escape:'html':'UTF-8'}" class="img">
+              <img class="replace-2x" src="{$parentcategory.image.medium.url|escape:'html':'UTF-8'}" alt="{$parentcategory.name|escape:'html':'UTF-8'}" />
+            </a>
+            <h5>
+              <a class="parentcategory-name" href="{$parentcategory.url|escape:'html':'UTF-8'}" >{$parentcategory.name|truncate:25:'...'|escape:'html':'UTF-8'}</a>
+            </h5>
+          </li>
+        {/foreach}
+        </ul>
+      </div>
+    {/block}
+    ```
+    
 ## Contribución
 1. Luis Huaymana
 2. [Prestademia](https://www.youtube.com/c/prestademia) : [https://www.youtube.com/c/prestademia](https://www.youtube.com/c/prestademia)
