@@ -63,24 +63,28 @@ Siga los siguientes pasos de acontinuación:
          });
      }
   ```
--- Con todo lo anterior (paso 1 y paso 2) completamos la configuración para la ficha de producto y dejamos listo el js para el carrito de compras
+- Con todo lo anterior (paso 1 y paso 2) completamos la configuración para la ficha de producto y dejamos listo el js para el carrito de compras
 
 ### 3: Paso
 - Ingresar a tu proyecto y buscar el archivo **Cart.php** en la ruta
   **/classes/** y busca la funcion llamada **function updateQty()** y copia todo esa funcion completa.
+
 - Luego crea un override; si ya lo tienes creado agrega la funcion copiada dentro de la clase principal, como se muestra en el video y edita:
--- Busca dentro de funcion la parte :
+
+- Busca dentro de funcion la parte :
+
  ```
- if (!empty($id_product_attribute)) {
+        if (!empty($id_product_attribute)) {
             $minimal_quantity = (int) Attribute::getAttributeMinimalQty($id_product_attribute);
         } else {
             $minimal_quantity = (int) $product->minimal_quantity;
         }
  ```
--- Después de esta linea agrega lo siguiente:
+
+- Después de esta linea agrega lo siguiente:
 
   ```
-    $verify_multiply = $this->getProductQuantity(
+     $verify_multiply = $this->getProductQuantity(
             $id_product,
             $id_product_attribute,
             (int) $id_customization,
@@ -96,15 +100,16 @@ Siga los siguientes pasos de acontinuación:
         else{
             $quantity = $min;
         }
-    ```
+  ```
   
 ### 4: Paso
 - Ahora en este paso final agrega un attributo a un input en el archivo **cart-detailed-product-line.tpl** en la ruta
   **/themes/classic/template/checkout/_partials/**, busca la class= **"js-cart-line-product-quantity"** y agrega lo siguiente:
   
   ```
-  min="{$product.minimal_quantity}"
+     min="{$product.minimal_quantity}"
   ```
+  
 - Y con eso terminariamos el carrito.
 
 ## Contribución
